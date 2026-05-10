@@ -317,10 +317,10 @@ CreateIndex(CIndex* res_index,
 
         auto index =
             milvus::indexbuilder::IndexFactory::GetInstance().CreateIndex(
-                field_type, config, fileManagerContext);
+                field_type, config, fileManagerContext);    // todo 类型?
         LOG_INFO("create index instance success, build_id: {}",
                  build_index_info->buildid());
-        index->Build();
+        index->Build(); // todo 无参?
         LOG_INFO("build index done, build_id: {}", build_index_info->buildid());
         *res_index = index.release();
         auto status = CStatus();

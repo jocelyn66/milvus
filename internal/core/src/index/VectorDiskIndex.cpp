@@ -285,7 +285,7 @@ void
 VectorDiskAnnIndex<T>::BuildWithDataset(const DatasetPtr& dataset,
                                         const Config& config) {
     auto local_chunk_manager =
-        storage::LocalChunkManagerSingleton::GetInstance().GetChunkManager();
+        storage::LocalChunkManagerSingleton::GetInstance().GetChunkManager();   // todo
     knowhere::Json build_config;
     build_config.update(config);
 
@@ -326,7 +326,7 @@ VectorDiskAnnIndex<T>::BuildWithDataset(const DatasetPtr& dataset,
     offset += sizeof(dim);
 
     size_t data_size = static_cast<size_t>(num) * milvus::GetVecRowSize<T>(dim);
-    auto raw_data = const_cast<void*>(milvus::GetDatasetTensor(dataset));
+    auto raw_data = const_cast<void*>(milvus::GetDatasetTensor(dataset));   // todo
     local_chunk_manager->Write(local_data_path, offset, raw_data, data_size);
 
     // For VECTOR_ARRAY, write offsets to a separate file and pass the path to knowhere
@@ -343,7 +343,7 @@ VectorDiskAnnIndex<T>::BuildWithDataset(const DatasetPtr& dataset,
             storage::GenFieldRawDataPathPrefix(
                 local_chunk_manager, segment_id, field_id) +
             "offset";
-        local_chunk_manager->CreateFile(offsets_path);
+        local_chunk_manager->CreateFile(offsets_path);  // 创建文件
 
         // GetDatasetRows returns total flattened vector count for vector arrays,
         // not the number of emb_lists. Count actual offsets by scanning the array
@@ -356,6 +356,7 @@ VectorDiskAnnIndex<T>::BuildWithDataset(const DatasetPtr& dataset,
         }
         num_offsets++;  // include the terminal element (== total_vectors)
 
+        // note 写磁盘
         // Write offsets to file
         // Format: [num_offsets (size_t)][offsets_data (size_t array)]
         int64_t write_pos = 0;
@@ -372,12 +373,13 @@ VectorDiskAnnIndex<T>::BuildWithDataset(const DatasetPtr& dataset,
         build_config[EMB_LIST_OFFSETS_PATH] = offsets_path;
     }
 
-    auto stat = index_.Build({}, build_config);
+    auto stat = index_.Build({}, build_config); // note knowhere 量化+构建
     if (stat != knowhere::Status::success)
         ThrowInfo(ErrorCode::IndexBuildError,
                   "failed to build index, {}",
                   KnowhereStatusString(stat));
 
+    // 处理有效数据位图
     if (HasValidData()) {
         auto valid_data_path = local_index_path_prefix + "/" + VALID_DATA_KEY;
         size_t count = offset_mapping_.GetTotalCount();
