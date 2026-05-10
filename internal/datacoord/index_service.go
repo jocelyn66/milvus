@@ -121,6 +121,7 @@ func setIndexParam(indexParams []*commonpb.KeyValuePair, key, value string) {
 	}
 }
 
+// todo: 异步 那建索引什么时候返回?
 // CreateIndex create an index on collection.
 // Index building is asynchronous, so when an index building request comes, an IndexID is assigned to the task and
 // will get all flushed segments from DataCoord and record tasks with these segments. The background process
@@ -309,6 +310,7 @@ func (s *Server) CreateIndex(ctx context.Context, req *indexpb.CreateIndexReques
 		return nil, err
 	}
 
+	// todo: 广播?
 	channels := make([]string, 0, len(coll.GetVirtualChannelNames())+1)
 	channels = append(channels, streaming.WAL().ControlChannel())
 	channels = append(channels, coll.GetVirtualChannelNames()...)

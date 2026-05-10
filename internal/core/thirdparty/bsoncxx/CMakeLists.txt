@@ -27,6 +27,12 @@ set(ENABLE_SNAPPY OFF CACHE INTERNAL "")
 set(ENABLE_ZSTD OFF CACHE INTERNAL "")
 set(ENABLE_SSL OFF CACHE INTERNAL "")
 
+# mongo-c-driver's bundled utf8proc path relies on its FindUtf8Proc.cmake to
+# create the utf8proc_obj target. Conan's toolchain prefers package configs,
+# which can pick up Homebrew utf8proc instead and leave that target undefined.
+set(MILVUS_BSONCXX_PREV_CMAKE_FIND_PACKAGE_PREFER_CONFIG ${CMAKE_FIND_PACKAGE_PREFER_CONFIG})
+set(CMAKE_FIND_PACKAGE_PREFER_CONFIG OFF)
+
 # Use FetchContent to download and build mongo-cxx-driver at configure time
 FetchContent_Declare(
     mongo-cxx-driver
@@ -36,6 +42,7 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(mongo-cxx-driver)
+set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ${MILVUS_BSONCXX_PREV_CMAKE_FIND_PACKAGE_PREFER_CONFIG})
 
 # The targets are now available: bsoncxx_shared
 # Create aliases for easier use
